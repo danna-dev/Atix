@@ -8,38 +8,55 @@ const express = require('express');
 const router = express.Router();
 server.initServer();
 
-const createHash = (prev_hash, message, nonce) =>{
+const createHash = (str) =>{
     return crypto
     .createHash('sha256')
-    .update(`${prev_hash},${message},${nonce}`, 'utf8')
+    .update(str, 'utf8')
     .digest('hex')
     .toString();
 }
 
-router.post('/file', (req, res) =>{
-    const foo = createHash('0000000000000000000000000000000000000000000000000000000000000000','Hola Mundo',5);
+const reader = () =>{
+    const path = 'public/file.csv';
+    return new Promise((resolve) =>{
+        const results =[];
+        if(fs.existsSync(path)){
+            fs.createReadStream(path)
+            .pipe(csvParser())
+            .on('data', (data) => results.push(data))
+            .on('end', () =>resolve(results))
+        }else{
+            resolve(results)
+        }
 
-    /*const cvsWritter = createCvsWritter({
+    });
+}
+
+const writter  =  (records) =>{
+    const cvsWritter = createCvsWritter({
         path:'public/file.csv',
         header:['Hash']
     })
 
-    const records = [
-        ['sdsdgsdg'],
-        ['yiuiyui']
-    ]
+    cvsWritter.writeRecords([records]).then(()=>console.log('done'))
+}
 
-    cvsWritter.writeRecords(records).then(()=>console.log('done'))*/
+router.post('/file', async (req, res) =>{
+    const data = await reader();
+    const prev_hash = data.length?data[data.length-1]:'0000000000000000000000000000000000000000000000000000000000000000';
+    const message = req.body.message;
+    const nonce = 5;
+    const strline = `${prev_hash},${message},${nonce}`;
 
-    const results =[];
-    fs.createReadStream('public/file.csv')
-    .pipe(csvParser())
-    .on('data', (data) => results.push(data))
-    .on('end', () =>{
-        console.log('results',results);
-    })
+    console.log('data',data);
 
-    res.send('esto es un post');
+    const newHash = createHash(strline);
+    data.push(strline)
+
+    writter(data)
+
+    res.send('done')
+
 });
 
 
