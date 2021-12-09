@@ -37,19 +37,26 @@ const writter  =  (records) =>{
         path:'public/file.csv',
         header:['Hash']
     })
-    console.log("records",records);
     cvsWritter.writeRecords(records).then(()=>console.log('done'))
 }
 
 router.post('/file', async (req, res) =>{
     const data = await reader();
-    console.log('data', data);
-    const message = req.body.message;
-    const nonce = 5;
     const prev_hash = data.length? createHash(data[data.length-1][0]):'0000000000000000000000000000000000000000000000000000000000000000';
-    console.log("prev_hash",prev_hash);
+    const message = req.body.message;
+    let nonce = 0;
+    let isValid = false;
+    let strline;
 
-    const strline = `${prev_hash},${message},${nonce}`;
+    while (!isValid) {
+        strline = `${prev_hash},${message},${nonce}`;
+        const newHash = createHash(strline);
+
+        if(newHash.substring(0,2) == '00'){
+            isValid = true;
+        }
+        nonce ++
+    }
 
     data.push([strline])
 
