@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/danna-dev/Atix#readme",
   "dependencies": {
+    "crypto": "^1.0.1",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
     "express": "^4.17.1"
   },
   "devDependencies": {
