@@ -23,7 +23,7 @@ const reader = () =>{
         if(fs.existsSync(path)){
             fs.createReadStream(path)
             .pipe(csvParser())
-            .on('data', (data) => results.push(data))
+            .on('data', (data) => results.push([data.Hash]))
             .on('end', () =>resolve(results))
         }else{
             resolve(results)
@@ -37,21 +37,21 @@ const writter  =  (records) =>{
         path:'public/file.csv',
         header:['Hash']
     })
-
-    cvsWritter.writeRecords([records]).then(()=>console.log('done'))
+    console.log("records",records);
+    cvsWritter.writeRecords(records).then(()=>console.log('done'))
 }
 
 router.post('/file', async (req, res) =>{
     const data = await reader();
-    const prev_hash = data.length?data[data.length-1]:'0000000000000000000000000000000000000000000000000000000000000000';
+    console.log('data', data);
     const message = req.body.message;
     const nonce = 5;
+    const prev_hash = data.length? createHash(data[data.length-1][0]):'0000000000000000000000000000000000000000000000000000000000000000';
+    console.log("prev_hash",prev_hash);
+
     const strline = `${prev_hash},${message},${nonce}`;
 
-    console.log('data',data);
-
-    const newHash = createHash(strline);
-    data.push(strline)
+    data.push([strline])
 
     writter(data)
 
