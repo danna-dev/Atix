@@ -54,6 +54,9 @@ const reader = () =>{
 }
 
 const writter  =  (records) =>{
+    if (!fs.existsSync('public')){
+        fs.mkdirSync('public');
+    }
     const cvsWritter = createCvsWritter({
         path:'public/file.csv',
         header:['Hash']
